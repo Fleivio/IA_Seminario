@@ -1,4 +1,7 @@
-import pygame 
+import pygame
+import pygame_widgets
+from pygame_widgets.slider import Slider
+from pygame_widgets.textbox import TextBox
 
 class Circle:
     def __init__(self, color, radius, position):

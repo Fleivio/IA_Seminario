@@ -48,7 +48,8 @@ fc = Face(DNA(list(range(100, 155))))
 def ex1():
 
     while True:
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 break
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -57,6 +58,14 @@ def ex1():
 
         screen.fill((255, 255, 255))
         b.draw(screen)
+
+        global mut_forms, slider, slideroutput
+
+        slider_out = slider.getValue()
+        slideroutput.setText(slider_out)
+        mut_forms = mut_linear(maxGene, 0, slider_out, 10)
+
+        pygame_widgets.update(events)
         pygame.display.flip()
         pygame.time.Clock().tick(200)
 
@@ -79,8 +88,12 @@ if __name__ == '__main__':
     popsize = 6
     maxGene = 50
 
-    pop = Population(popsize, list(np.arange(0,maxGene,0.01)), 100)
     mut_forms = mut_linear(maxGene, 0, 0.3, 10)
+    slider = Slider(screen, 50, 10, 600, 20, min=0, max=1, step=0.01)
+    slideroutput = TextBox(screen, 700, 10, 50, 50, fontSize=20)
+
+
+    pop = Population(popsize, list(np.arange(0,maxGene,0.01)), 100)
     b = ButtonFamily(pop, Face, gen_next_faces)
 
 
