@@ -68,7 +68,7 @@ def gen_next_faces(chosen_one):
 
 
     global b
-    b = ButtonFormFamily(pop, Face, gen_next_faces)
+    b = ButtonFamily(pop, Face, gen_next_faces)
 
 
 if __name__ == '__main__':
@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
     pop = Population(popsize, list(np.arange(0,maxGene,0.01)), 100)
     mut_forms = mut_linear(maxGene, 0, 0.3, 10)
-    b = ButtonFormFamily(pop, Face, gen_next_faces)
+    b = ButtonFamily(pop, Face, gen_next_faces)
 
 
     ex1()
