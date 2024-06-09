@@ -1,6 +1,5 @@
 import random
 
-
 class DNA:
     def __init__(self, genes):
         self.genes = genes
@@ -23,23 +22,25 @@ class Population:
 
     def paired_fitness(self, f):
         fits = [i.fitness(f) for i in self.population]
-        total = max(sum(fits), 1)
+        total = sum(fits)
         return [(i, j / total) for (i, j) in zip(self.population, fits)]
 
     def best_individual(self, f): 
         return max(self.paired_fitness(f), key=lambda x: x[1])[0]
 
 class Evolution():
-    def __init__(self, fitness, selection, crossover, mutation, stop_condition):
+    def __init__(self, fitness, selection, crossover, mutation, stop_condition, debug=lambda x: x):
         self.fitness = fitness
         self.mutation = mutation
         self.selection = selection
         self.crossover = crossover
         self.stop_condition = stop_condition
+        self.debug = debug
 
     def evolver(self, population):
         generations = 0
-        while self.stop_condition(population.best_individual(self.fitness)) == False:
+        best_individual = None
+        while best_individual == None or self.stop_condition(best_individual) == False:
             ind_and_fitness = population.paired_fitness(self.fitness)
             mating_pool = self.selection(ind_and_fitness)
 
@@ -52,6 +53,9 @@ class Evolution():
             population.population = mut_offspring
             generations += 1
 
+            best_individual = max(ind_and_fitness, key=lambda x: x[1])
+            self.debug(ind_and_fitness)
+
         return generations
 
 def fit_string (string, f):
@@ -62,6 +66,18 @@ def mut_string (genes, rate):
     def mut(indiviual):
         return DNA([random.choice(genes) if random.random() < rate else i for i in indiviual.genes])
 
+    return mut
+
+def mut_linear(mx, mn, rate, step):
+    def mut(indiviual):
+        g = list(map(lambda x: max(mn, min(x, mx)),[
+            i 
+            if random.random() > rate 
+            else i + random.choice([step, step * (-1)])
+            for i in indiviual.genes
+         ]))
+        return DNA(g)
+        
     return mut
 
 # SELECTORS
@@ -149,8 +165,7 @@ def uniform_crossover(p1, p2):
 
 def eq_stop_condition(string):
     def stop(best_individual):
-        print(best_individual)
-        # input()
+        best_individual = best_individual[0]
         return best_individual.genes == string
 
     return stop

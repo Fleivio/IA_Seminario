@@ -1,6 +1,11 @@
 import string
 from Evo import *
 
+def print_best(pop):
+    pop.sort(key=lambda x: x[1])
+    best = pop[-1]
+    print(best[0])
+
 alphabet = string.ascii_letters + ' '
 guess = list('lorem ipsum')
 
@@ -10,6 +15,7 @@ b = Evolution(fit_string(guess, lambda x: x),
                     rank_selection,
                     uniform_crossover,
                     mut_string(alphabet, 0.05),
-                    eq_stop_condition(guess))
+                    eq_stop_condition(guess),
+                    debug=print_best)
 
 print(b.evolver(a))
