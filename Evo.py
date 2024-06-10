@@ -149,7 +149,6 @@ def boltzmann_selection(temp, cooling=0.01):
             return exp_div_temp(fitness) / e_sum_f
 
         selection.temp = max(selection.temp - selection.cooling, 0.001)
-        print(selection.temp)
 
         weights = [boltzmann(i[1]) for i in population]
         for i in range(round(total/2)):
