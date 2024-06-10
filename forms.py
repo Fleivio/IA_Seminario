@@ -7,8 +7,8 @@ from UI import *
 
 class Forms:
     def __init__(self, dna):
-        self.dna = DNA(dna.genes.copy())
-        self.forms = Forms.parse_config(dna.genes)
+        self.dna = dna.copy()
+        self.forms = Forms.parse_config(dna)
 
     def draw(self, screen, delta=(0,0)):
         for form in self.forms:

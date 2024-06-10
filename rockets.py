@@ -113,17 +113,17 @@ def fitness(goal, obstacles, initial_position):
 
             for obstacle in obstacles:
                 if obstacle.check_collision(rocket):
-                    return 0.5/rocket.transform.square_distance(goal)
+                    return 0.1/rocket.transform.square_distance(goal)
             
             if rocket.transform.position[0] < 0 or rocket.transform.position[0] > 800 or \
                rocket.transform.position[1] < 0 or rocket.transform.position[1] > 600:
-                return 0.5/rocket.transform.square_distance(goal)
+                return 1/rocket.transform.square_distance(goal)
 
             if rocket.transform.position[0] < goal[0] + goal_radius and rocket.transform.position[0] > goal[0] - goal_radius and \
                rocket.transform.position[1] < goal[1] + goal_radius and rocket.transform.position[1] > goal[1] - goal_radius:
                 return 10
 
-        return 1/rocket.transform.square_distance(goal) + 1
+        return 1/rocket.transform.square_distance(goal)
 
     return simulation
 
@@ -134,7 +134,7 @@ def debug_all(goal, obstacles, screen, initial_position):
         rockets = []
 
         for dna in individuals:
-            thrust = Thruster(dna.genes)
+            thrust = Thruster(dna)
             rockets.append(Rocket(location=initial_position, thruster=thrust))
 
         size = len(rockets[0].thruster.forces)
@@ -172,7 +172,7 @@ def debug_all(goal, obstacles, screen, initial_position):
             pygame.draw.circle(screen, (255, 0, 0), goal, goal_radius)
 
             pygame.display.flip()
-            pygame.time.Clock().tick(200)
+            pygame.time.Clock().tick(700)
         
     return simulate
     
@@ -180,7 +180,7 @@ goal_radius = 20
 
 def example1():
     alphabet = list(np.arange(-2,2,0.01))
-    initial_pop = Population(100, alphabet, 400)
+    initial_pop = Population(100, alphabet, 600)
 
     obs = [Obstacle([100, 300], [500, 50])]
     initial_position = [400, 500]
@@ -190,9 +190,9 @@ def example1():
     simulation = debug_all(goal_position, obs, screen, initial_position)
 
     b = Evolution(fit_f,
-                    roulette_selection,
-                    uniform_crossover,
-                    mut_string(alphabet, 0.05),
+                    boltzmann_selection(1, 0.01),
+                    lambda x, y: (x, y),
+                    mut_string(alphabet, 0.01),
                     lambda x: False,
                     simulation)
 

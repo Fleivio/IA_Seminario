@@ -1,10 +1,10 @@
 
-from general04 import *
+from forms import *
 
 class Face:
     def __init__(self, dna):
-        self.dna = DNA(dna.genes.copy())
-        self.phenotype = Face.parse_config(dna.genes)
+        self.dna = dna.copy()
+        self.phenotype = Face.parse_config(dna)
 
     def parse_config(configuration):
         forms = []
@@ -42,7 +42,7 @@ class Face:
         for form in self.phenotype:
             form.draw(screen, delta)
 
-fc = Face(DNA(list(range(100, 155))))
+# fc = Face(list(range(100, 155)))
 
 
 def ex1():

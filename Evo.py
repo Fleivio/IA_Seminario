@@ -1,28 +1,17 @@
 import random
 
-class DNA:
-    def __init__(self, genes):
-        self.genes = genes
-
-    def fitness(self, f):
-        return f(self.genes)
-
-    def __str__(self):
-        return str(self.genes)
-
-    def __repr__(self):
-        return str(self.genes)
-
 class Population:
     def __init__(self, size, genes, size_dna):
         def randDNA():
             return [random.choice(genes) for _ in range(size_dna)]
 
-        self.population = [DNA(randDNA()) for _ in range(size)]
+        self.population = [randDNA() for _ in range(size)]
 
     def paired_fitness(self, f):
-        fits = [i.fitness(f) for i in self.population]
+        fits = [f(i) for i in self.population]
         total = sum(fits)
+        if total == 0:
+            return [(i, 0.1) for i in self.population]
         return [(i, j / total) for (i, j) in zip(self.population, fits)]
 
     def best_individual(self, f): 
@@ -64,7 +53,7 @@ def fit_string (string, f):
 
 def mut_string (genes, rate):
     def mut(indiviual):
-        return DNA([random.choice(genes) if random.random() < rate else i for i in indiviual.genes])
+        return [random.choice(genes) if random.random() < rate else i for i in indiviual]
 
     return mut
 
@@ -74,10 +63,21 @@ def mut_linear(mx, mn, rate, step):
             i 
             if random.random() > rate 
             else i + random.choice([step, step * (-1)])
-            for i in indiviual.genes
+            for i in indiviual
          ]))
-        return DNA(g)
+        return g
         
+    return mut
+
+def mut_swap(rate):
+    def mut(indiviual):
+        g = indiviual.copy()
+        if random.random() < rate:
+            a = random.randint(0, len(g)-1)
+            b = random.randint(0, len(g)-1)
+            g[a], g[b] = g[b], g[a]
+        return g
+
     return mut
 
 # SELECTORS
@@ -134,19 +134,49 @@ def tournament_selection(size, probability):
 
     return selection
 
+def boltzmann_selection(temp, cooling=0.01):
+    def selection(population):
+        total = len(population)
+        matings = []
+
+
+        def exp_div_temp(fitness):
+            return 2.718**(fitness/selection.temp)
+
+        e_sum_f = sum([exp_div_temp(i[1]) for i in population])
+
+        def boltzmann(fitness):
+            return exp_div_temp(fitness) / e_sum_f
+
+        selection.temp = max(selection.temp - selection.cooling, 0.001)
+        print(selection.temp)
+
+        weights = [boltzmann(i[1]) for i in population]
+        for i in range(round(total/2)):
+            first = random.choices(population, weights=weights, k=1)[0][0]
+            second = random.choices(population, weights=weights, k=1)[0][0]
+            matings.append((first, second))
+
+        return matings
+
+    selection.temp = temp
+    selection.cooling = cooling
+    return selection
+
+
 # CROSSOVERS
 
 def one_point_crossover(p1, p2):
-    point = random.randint(0, len(p1.genes))
-    f1 = p1.genes[:point] + p2.genes[point:]
-    f2 = p2.genes[:point] + p1.genes[point:]
+    point = random.randint(0, len(p1))
+    f1 = p1[:point] + p2[point:]
+    f2 = p2[:point] + p1[point:]
 
-    return DNA(f1), DNA(f2)
+    return f1, f2
 
 def k_point_crossover(points):
     def crossover(p1, p2):
-        f1 = DNA(p1.genes)
-        f2 = DNA(p2.genes)
+        f1 = p1.copy()
+        f2 = p2.copy()
 
         for _ in range(points):
             f1, f2 = one_point_crossover(f1, f2)
@@ -156,16 +186,31 @@ def k_point_crossover(points):
     return crossover
 
 def uniform_crossover(p1, p2):
-    f1 = [i if random.random() < 0.5 else j for i, j in zip(p1.genes, p2.genes)]
-    f2 = [i if random.random() < 0.5 else j for i, j in zip(p1.genes, p2.genes)]
+    f1 = [i if random.random() < 0.5 else j for i, j in zip(p1, p2)]
+    f2 = [i if random.random() < 0.5 else j for i, j in zip(p1, p2)]
 
-    return DNA(f1), DNA(f2)
+    return f1, f2
 
 # CONDIÇÕES DE PARADA
 
 def eq_stop_condition(string):
     def stop(best_individual):
         best_individual = best_individual[0]
-        return best_individual.genes == string
+        return best_individual == string
 
+    return stop
+
+def stagnation_stop_condition(max_stagnation):
+    def stop(best_individual):
+        best_individual = best_individual[0]
+        if stop.last_best == best_individual:
+            stop.stagnation += 1
+        else:
+            stop.stagnation = 0
+            stop.last_best = best_individual
+
+        return stop.stagnation > max_stagnation
+
+    stop.stagnation = 0
+    stop.last_best = None
     return stop
